@@ -1,0 +1,36 @@
+
+name: WhatsApp Bot - Persistent
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+
+    - name: Install Dependencies
+      run: npm install
+
+    - name: Run WhatsApp Bot Persistently
+      env:
+        BOT_SECRET: ${{ secrets.DEE }}
+      run: |
+        while true
+        do
+          echo "Starting WhatsApp Bot..."
+          node index.js
+          echo "Bot crashed or stopped. Restarting in 5 seconds..."
+          sleep 5
+        done
