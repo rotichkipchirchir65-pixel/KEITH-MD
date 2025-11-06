@@ -1,15 +1,15 @@
 
-name: WhatsApp-Bot-Run
+name: SUBZERO‑MD‑X‑MR‑FRANK
 
 on:
   workflow_dispatch:
 
 jobs:
-  run-bot:
+  loop-task:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
+      - name: Checkout Code
         uses: actions/checkout@v3
 
       - name: Setup Node.js
@@ -17,17 +17,19 @@ jobs:
         with:
           node-version: 20
 
-      - name: Install dependencies
+      - name: Install Dependencies
         run: npm install
 
-      - name: Run WhatsApp bot in loop
+      - name: Run Bot (loop & auto‑restart if crash)
         run: |
-          echo "Starting WhatsApp bot..."
-          timeout 18000 bash -c 'while true; do npm start || echo "Bot crashed, restarting..."; sleep 5; done'
+          echo "Running bot in auto‑restart mode..."
+          timeout 18000 bash -c 'while true; do npm start || echo "Bot crashed, restarting…"; sleep 240; done'
 
-      - name: Re-Trigger Workflow
+      - name: Re‑Trigger Workflow
         if: always()
         run: |
+          echo "Re‑running workflow..."
           curl -X POST \
-            -H "Authorization: Bearer secrets.DEE "             -H "Accept: application/vnd.github.v3+json"             https://api.github.com/repos/{{ github.repository }}/actions/workflows/WhatsApp-Bot-Run.yml/dispatches \
+            -H "Authorization: Bearer ${{ secrets.DEE }}" \
+            https://api.github.com/repos/Keithkeizzah/KEITH‑MD/actions/workflows/DEE.yml/dispatches \
             -d '{"ref":"main"}'
