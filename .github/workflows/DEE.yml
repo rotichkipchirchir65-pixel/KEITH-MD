@@ -1,35 +1,67 @@
 
-name: SUBZERO‑MD‑X‑MR‑FRANK
+name: WhatsApp-Bot-Run
 
 on:
+  # Allows you to manually trigger the workflow from the GitHub Actions tab.
   workflow_dispatch:
 
 jobs:
-  loop-task:
+  run-bot:
+    # Specifies the operating system for the job.
     runs-on: ubuntu-latest
+    # Sets a timeout for the entire job. If the job runs longer than this,
+    # GitHub Actions will automatically terminate it. 300 minutes = 5 hours.
+    timeout-minutes: 300
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+    - name: Checkout repository
+      # Uses the official action to check out your repository code.
+      uses: actions/checkout@v3
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 20
+    - name: Setup Node.js
+      # Uses the official action to set up Node.js for your project.
+      uses: actions/setup-node@v3
+      with:
+        node-version: 20 # Specifies the Node.js version to use.
 
-      - name: Install Dependencies
-        run: npm install
+    - name: Install dependencies
+      # Runs npm install to get all your project's dependencies.
+      run: npm install
 
-      - name: Run Bot (loop & auto‑restart if crash)
-        run: |
-          echo "Running bot in auto‑restart mode..."
-          timeout 18000 bash -c 'while true; do npm start || echo "Bot crashed, restarting…"; sleep 240; done'
+    - name: Run WhatsApp bot with automatic restarts
+      # This step starts your bot.
+      # It uses `timeout` to ensure the entire bash command respects the job's 5-hour limit.
+      # Inside, `bash -c 'while true; do ... done'` creates an inner loop.
+      # If `npm start` (your bot) crashes and exits, the `||` operator triggers the
+      # `echo "Bot crashed, restarting..."` and then `sleep 5` before restarting `npm start`.
+      run: |
+        echo "Starting WhatsApp bot with crash recovery..."
+        # The `timeout` command will kill the `bash -c` process after 18000 seconds (5 hours).
+        # This aligns with the job's overall timeout-minutes.
+        timeout 18000s bash -c 'while true; do npm start || echo "Bot crashed, restarting in 5 seconds..."; sleep 5; done'
+        echo "WhatsApp bot process finished (either by timeout or manual stop)."
 
-      - name: Re‑Trigger Workflow
-        if: always()
-        run: |
-          echo "Re‑running workflow..."
-          curl -X POST \
-            -H "Authorization: Bearer ${{ secrets.DEE }}" \
-            https://api.github.com/repos/Keithkeizzah/KEITH‑MD/actions/workflows/DEE.yml/dispatches \
-            -d '{"ref":"main"}'
+    - name: Re-Trigger Workflow for Continuous Operation
+      # This step is crucial for the "infinite loop" behavior.
+      # `if: always()` ensures this step runs even if the previous steps failed,
+      # guaranteeing the workflow attempts to re-trigger itself.
+      if: always()
+      env:
+        # Load your GitHub Personal Access Token from repository secrets.
+        # Make sure you have a secret named `YOUR_GITHUB_TOKEN_FOR_DISPATCH`
+        # created in your repository settings with `repo` or `workflow` scope.
+        GH_TOKEN: ${{ secrets.DEE }}
+      run: |
+        echo "Re-triggering the workflow for continuous operation..."
+        # Uses curl to dispatch a new workflow run.
+        # -X POST: Specifies a POST request.
+        # -H "Authorization: token ${GH_TOKEN}": Authenticates with your PAT.
+        # -H "Accept: application/vnd.github.v3+json": Sets the API version.
+        # The URL targets the `workflow_dispatch` endpoint for this specific workflow.
+        # -d '{"ref":"main"}': The payload for the dispatch event, specifying the branch to run on.
+        curl -X POST \
+             -H "Authorization: token ${GH_TOKEN}" \
+             -H "Accept: application/vnd.github.v3+json" \
+             https://api.github.com/repos/${{ github.repository }}/actions/workflows/WhatsApp-Bot-Run.yml/dispatches \
+             -d '{"ref":"main"}'
+        echo "Workflow re-trigger requested."
