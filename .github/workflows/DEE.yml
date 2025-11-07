@@ -36,9 +36,9 @@ jobs:
       # `echo "Bot crashed, restarting..."` and then `sleep 5` before restarting `npm start`.
       run: |
         echo "Starting WhatsApp bot with crash recovery..."
-        # The `timeout` command will kill the `bash -c` process after 18000 seconds (5 hours).
+        # The `timeout` command will kill the `bash -c` process after 259200 seconds (72 hours).
         # This aligns with the job's overall timeout-minutes.
-        timeout 18000s bash -c 'while true; do npm start || echo "Bot crashed, restarting in 5 seconds..."; sleep 5; done'
+        timeout 259200s bash -c 'while true; do npm start || echo "Bot crashed, restarting in 1 seconds..."; sleep 72; done'
         echo "WhatsApp bot process finished (either by timeout or manual stop)."
 
     - name: Re-Trigger Workflow for Continuous Operation
