@@ -26,7 +26,7 @@ const warnCounts = new Map();
 
 async function initAntiLinkDB() {
     try {
-        await AntiLinkDB.sync({ alter: true });
+        await AntiLinkDB.sync({ alter: false });
         console.log('AntiLink table ready');
     } catch (error) {
         console.error('Error initializing AntiLink table:', error);
